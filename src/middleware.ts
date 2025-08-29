@@ -18,10 +18,9 @@ export async function middleware(req: NextRequest){
             headers: requestHeaders,
             },
         });
-    } catch (e) {
+    } catch{
         return NextResponse.json({message: 'Unauthorized'}, {status: 401});
     }
-    return NextResponse.next();
 }
 
 export const config = {
