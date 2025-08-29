@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+
+
 import clientPromise from "@/lib/db";
-export async function GET(req: NextRequest){
+export async function GET(){
     const client = clientPromise;
     const db = client.db('plant_pal')
     const topUsers = await db.collection("plants").aggregate([

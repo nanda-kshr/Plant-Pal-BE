@@ -18,7 +18,7 @@ export async function PUT(req: NextRequest){
     const body = await req.json();
     const { name, email } = body;
     
-    const updateData: any = {};
+    const updateData: Record<string, string> = {};
     if (name !== null && name !== undefined) updateData.name = name;
     if (email !== null && email !== undefined) updateData.email = email;
     await db.collection("users").updateOne({ _id: new ObjectId(user_id) }, { $set: updateData }, { upsert: true });
