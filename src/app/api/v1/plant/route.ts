@@ -33,7 +33,7 @@ export async function PUT(req: NextRequest){
     const db = client.db('plant_pal')
     const user_id = new ObjectId(req.headers.get("user_id") || '');
     const body = await req.json();
-    let {plant_id, name, nickname, waterInterval, waterDuration } = body;
+    const {plant_id, name, nickname, waterInterval, waterDuration } = body;
     if (waterInterval !== undefined && (!Number.isInteger(waterInterval) || waterInterval < 0)) {
         return NextResponse.json({ message: 'waterInterval must be a non-negative integer' }, { status: 400 });
     }
@@ -58,7 +58,7 @@ export async function DELETE(req: NextRequest){
     if (!plant_id || !ObjectId.isValid(plant_id)) {
         return NextResponse.json({message: 'Invalid plant_id'}, {status: 400});
     }
-    
+
     await db.collection("plants").updateOne({_id : new ObjectId(plant_id), user_id: new ObjectId(user_id)}, {$set: {status: 'inactive'}}, {upsert: true});
     return NextResponse.json({message: 'Successfully saved the data'}, {status: 200});
 
