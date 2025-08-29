@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import clientPromise from "@/lib/db";
-import { ObjectId } from "mongodb";
-
 export async function GET(req: NextRequest){
     const client = clientPromise;
     const db = client.db('plant_pal')
-    const user_id = req.headers.get("user_id") || '';
     const topUsers = await db.collection("plants").aggregate([
         { $group: { _id: "$user_id", count: { $sum: 1 } } },
         { $sort: { count: -1 } },
