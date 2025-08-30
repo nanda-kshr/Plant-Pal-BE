@@ -32,6 +32,9 @@ export async function POST(req: NextRequest){
     if (wateredAt === undefined || wateredAt === null || water === undefined || water === null) return NextResponse.json({message: 'all data are required'}, {status: 400});
     if (!plant_id || !ObjectId.isValid(plant_id)) return NextResponse.json({message: 'Invalid plant_id'}, {status: 400});
     
+    const exists = await db.collection("plants").findOne({_id: new ObjectId(plant_id), user_id});
+    if (!exists) return NextResponse.json({message: 'Plant does not owned by the user'}, {status: 400});
+
     await db.collection("plants").updateOne({_id: new ObjectId(plant_id), user_id}, {$set: {water, wateredAt}}, {upsert: true});
     await db.collection("water_logs").insertOne({plant_id: new ObjectId(plant_id), user_id, water, wateredAt, loggedAt: new Date()});
     return NextResponse.json({message: 'Successfully saved the data'}, {status: 200});
