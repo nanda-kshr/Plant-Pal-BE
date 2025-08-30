@@ -19,7 +19,7 @@ export async function POST(req: NextRequest){
     const hashPassword = await bcrypt.hash(password,10);
     
     const user = await db.collection('users').insertOne({name, email, password: hashPassword, createdAt: new Date()});
-    const secret = jose.base64url.decode(await process.env.SECRET || '')
+    const secret = new TextEncoder().encode(process.env.SECRET || '')
     const jwt = await new jose.CompactSign(
                 new TextEncoder().encode(JSON.stringify({ user_id: user["insertedId"], name, email, iat: Math.floor(Date.now() / 1000) }))
             )

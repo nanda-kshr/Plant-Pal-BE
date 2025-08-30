@@ -9,7 +9,7 @@ export async function middleware(req: NextRequest){
     }
     const token = auth_token.replace(/^Bearer\s+/, '');
     try {
-        const { payload } = await jose.jwtVerify(token, jose.base64url.decode(process.env.SECRET || ''))
+        const { payload } = await jose.jwtVerify(token, new TextEncoder().encode(process.env.SECRET || ''))
         const userid = String(payload['user_id']);
         const requestHeaders = new Headers(req.headers);
         requestHeaders.set('user_id', userid);

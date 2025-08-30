@@ -22,7 +22,7 @@ export async function POST(req: NextRequest){
         return NextResponse.json({message: 'Invalid credentials'}, {status: 400});
     }
 
-    const secret = jose.base64url.decode(await process.env.SECRET || '')
+    const secret = new TextEncoder().encode(await process.env.SECRET || '')
     const jwt = await new jose.CompactSign(
             new TextEncoder().encode(JSON.stringify({ user_id: user["_id"], name: user["name"], email: email, iat: Math.floor(Date.now() / 1000) }))
         )
