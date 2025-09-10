@@ -14,11 +14,36 @@ type Interval = {
 }
 
 const ALLOWED_MODULES = ["water", "soil-moisture"];
-const ALLOWED_UNITS = new Set(["second", "minute"]);
+const ALLOWED_UNITS = new Set(["second", "seconds", "minute", "minutes"]);
 
 type ConvertedInterval = {
 	time: Date;
 	duration: Duration;
+}
+
+type PlantModules = {
+	water?: ConvertedInterval[];
+	['soil-moisture']?: ConvertedInterval[];
+}
+
+export async function GET(req: NextRequest){
+	const client = clientPromise;
+	const db = client.db('plant_pal');
+
+	const userIdHeader = req.headers.get('user_id') || '';
+	if (!ObjectId.isValid(userIdHeader)) return NextResponse.json({ message: 'Invalid user_id' }, { status: 400 });
+	const user_id = new ObjectId(userIdHeader);
+	const url = new URL(req.url);
+	const nicknameParam = url.searchParams.get('nickname') || '';
+	if (!nicknameParam) return NextResponse.json({ message: 'nickname is required' }, { status: 400 });
+
+	const nicknameLower = nicknameParam.toLowerCase();
+	const plant = await db.collection<PlantModules>('plants').findOne({ user_id, $expr: { $eq: [{ $toLower: '$nickname' }, nicknameLower] } }, { projection: { water: 1, ['soil-moisture']: 1 } });
+	if (!plant) return NextResponse.json({ message: 'Plant not found or not owned by the user' }, { status: 404 });
+
+	const water = plant.water ?? [];
+	const soil = plant['soil-moisture'] ?? [];
+	return NextResponse.json({ water, 'soil-moisture': soil }, { status: 200 });
 }
 
 export async function POST(req: NextRequest){
