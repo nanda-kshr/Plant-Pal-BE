@@ -10,6 +10,14 @@ export async function POST(req: NextRequest){
     const user_id = new ObjectId(req.headers.get("user_id") || '');
     const body = await req.json();
     const { name, nickname } = body;
+
+    if (nickname) {
+        const existing = await db.collection("plants").findOne({ nickname, status: 'active' });
+        if (existing) {
+            return NextResponse.json({ message: 'nickname already exists' }, { status: 400 });
+        }
+    }
+
     const new_plant = await db.collection("plants").insertOne({user_id: new ObjectId(user_id), name, nickname, status: 'active', createdAt: new Date()});
     return NextResponse.json({plant_id: new_plant["insertedId"], message: 'Successfully added a new plant'}, {status: 200});
 }
@@ -19,6 +27,15 @@ export async function GET(req: NextRequest){
     const db = client.db('plant_pal')
     const url = new URL(req.url);
     const user_id =  new ObjectId (req.headers.get("user_id") || '');
+
+    const nickname = url.searchParams.get('nickname') || '';
+    if (nickname) {
+        const nicknameLower = nickname.toLowerCase();
+        const plant = await db.collection('plants').findOne({ user_id, $expr: { $eq: [{ $toLower: '$nickname' }, nicknameLower] }, status: 'active' });
+        if (!plant) return NextResponse.json({ message: 'Plant not found' }, { status: 404 });
+        return NextResponse.json({ plant }, { status: 200 });
+    }
+
     const skip = parseInt(url.searchParams.get('skip') || '0');
     const limit = parseInt(url.searchParams.get('limit') || '10');
     if (limit > 20 || limit < 1){
